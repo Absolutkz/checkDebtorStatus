@@ -4,20 +4,15 @@ const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 
 const app = express();
-app.use(express.json());
 
-// Проверка, что IIN — ровно 12 цифр
-function isValidIin(iin) {
-  return /^\d{12}$/.test(iin);
-}
-
-// Скрипер HTML-таблицы
 async function scrapeDebts(iin) {
-  const url = `https://aisoip.adilet.gov.kz/debtors?iin=${iin}`;
-  const html = await (await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } })).text();
-  const $ = cheerio.load(html);
+  const url  = `https://aisoip.adilet.gov.kz/debtors?iin=${iin}`;
+  const html = await (await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0" }
+  })).text();
+  const $     = cheerio.load(html);
   const table = $("table").first();
-  const rows = table.find("tbody tr");
+  const rows  = table.find("tbody tr");
 
   if (!rows.length) return [];
   return rows.map((_, tr) => {
@@ -32,10 +27,11 @@ async function scrapeDebts(iin) {
   }).get();
 }
 
-app.get("/check-iin", async (req, res) => {
-  const { iin } = req.query;
-  if (!iin) return res.status(400).json({ message: "iin обязателен" });
-  if (!isValidIin(iin)) return res.status(400).json({ message: "Неверный формат IIN (12 цифр)" });
+app.get("/check-debtor-status", async (req, res) => {
+  const iin = req.query.iin;
+  if (!iin) {
+    return res.status(400).json({ message: "Параметр iin обязателен" });
+  }
 
   try {
     const details = await scrapeDebts(iin);
