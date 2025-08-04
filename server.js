@@ -7,13 +7,15 @@ const app = express();
 
 async function scrapeDebts(iin) {
   const url  = `https://aisoip.adilet.gov.kz/debtors?iin=${iin}`;
-  const html = await (await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } })).text();
+  const html = await (await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0" }
+  })).text();
   const $    = cheerio.load(html);
 
-  // 1) Парсим строки таблицы
+  // Парсим строки таблицы
   const table = $("table").first();
   const rows  = table.find("tbody tr");
-  const details = rows.map((i, tr) => {
+  const details = rows.map((_, tr) => {
     const tds = $(tr).find("td");
     return {
       debtor:      $(tds[0]).text().trim(),
@@ -24,17 +26,11 @@ async function scrapeDebts(iin) {
     };
   }).get();
 
-  // 2) Вычленяем общее число записей по тексту «1-3 из 3»
-  //    Ищем любой элемент, содержащий «из X»
+  // Ищем текст вида "1-3 из 3"
   let total = details.length;
-  const summaryText = $("body")
-    .find("*")
-    .filter((i, el) => {
-      const t = $(el).text().trim();
-      return /\d+\s*[-–]\s*\d+\s*из\s*\d+/.test(t);
-    })
-    .first()
-    .text();
+  const summaryText = $("*").filter((_, el) => {
+    return /\d+\s*[-–]\s*\d+\s*из\s*\d+/.test($(el).text());
+  }).first().text();
   const m = summaryText.match(/из\s*(\d+)/);
   if (m) total = parseInt(m[1], 10);
 
@@ -54,9 +50,10 @@ app.get("/check-debtor-status", async (req, res) => {
     return res.json({ status, total, details });
   } catch (err) {
     console.error(err);
-    return res.status(502).json({ message: "Ошибка при обращении к AISOIP" });
+    return res.status(502).json({ message: "Ошибка при обращении к AIS ОИП" });
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+
