@@ -26,12 +26,11 @@ async function scrapeDebts(iin) {
     };
   }).get();
 
-  // Ищем текст вида "1-3 из 3"
+  // Надёжно парсим общее число из info-блока DataTables
   let total = details.length;
-  const summaryText = $("*").filter((_, el) => {
-    return /\d+\s*[-–]\s*\d+\s*из\s*\d+/.test($(el).text());
-  }).first().text();
-  const m = summaryText.match(/из\s*(\d+)/);
+  const info = $("div.dataTables_info").text();  
+  // Пример текста: "Показаны записи с 1 до 3 из 3"
+  const m = info.match(/из\s+(\d+)/i);
   if (m) total = parseInt(m[1], 10);
 
   return { total, details };
@@ -39,9 +38,8 @@ async function scrapeDebts(iin) {
 
 app.get("/check-debtor-status", async (req, res) => {
   const iin = req.query.iin;
-  if (!iin) {
-    return res.status(400).json({ message: "Параметр iin обязателен" });
-  }
+  if (!iin) return res.status(400).json({ message: "Параметр iin обязателен" });
+
   try {
     const { total, details } = await scrapeDebts(iin);
     const status = total
@@ -50,8 +48,12 @@ app.get("/check-debtor-status", async (req, res) => {
     return res.json({ status, total, details });
   } catch (err) {
     console.error(err);
-    return res.status(502).json({ message: "Ошибка при обращении к AIS ОИП" });
+    return res.status(502).json({ message: "Ошибка при скрапинге AIS ОИП" });
   }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 });
 
 const PORT = process.env.PORT || 3000;
