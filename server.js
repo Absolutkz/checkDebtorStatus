@@ -20,31 +20,27 @@ app.get("/check", async (req, res) => {
   }
 
   try {
-    // 1) Получаем HTML со страницы результатов
     const searchUrl = `https://aisoip.adilet.gov.kz/debtors?iin_bin=${iin_bin}`;
-    const htmlRes = await fetch(searchUrl, {
-      headers: { "User-Agent": "Mozilla/5.0" }
-    });
+    const htmlRes = await fetch(searchUrl, { headers: { "User-Agent": "Mozilla/5.0" } });
     const html = await htmlRes.text();
 
-    // 2) Парсим таблицу с результатами
     const $ = cheerio.load(html);
-    const rows = $("#debtors-table tbody tr");
+    // Выбираем первую таблицу результатов поиска
+    const table = $("table").first();
+    const rows = table.find("tbody tr");
     if (rows.length === 0) {
-      // Ничего не найдено
-      return res.json({ debtorStatus: "Должник не найден", details: "" });
+      return res.json({ debtorStatus: "Должник не найден", details: [] });
     }
 
-    // 3) Собираем все записи в массив
     const records = [];
     rows.each((_, tr) => {
       const cols = $(tr).find("td");
       records.push({
-        debtor:   $(cols[0]).text().trim(),
-        date:     $(cols[1]).text().trim(),
-        executor: $(cols[2]).text().trim(),
-        document: $(cols[3]).text().trim(),
-        restriction: $(cols[4]).text().trim()
+        debtor:      $(cols[0]).text().trim(),
+        date:        $(cols[1]).text().trim(),
+        executor:    $(cols[2]).text().trim(),
+        document:    $(cols[3]).text().trim(),
+        restriction: $(cols[4]).text().trim(),
       });
     });
 
