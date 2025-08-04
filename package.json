@@ -1,7 +1,7 @@
 {
   "name": "debt-checker",
   "version": "1.0.0",
-  "description": "Сервис проверки задолженности по IIN через AISOIP",
+  "description": "Проверка задолженности по IIN через AIS ОИП",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
