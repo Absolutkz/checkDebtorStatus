@@ -1,7 +1,7 @@
 {
   "name": "debt-checker",
   "version": "1.0.0",
-  "description": "Proxy-сервис для проверки задолженности по ИИН/БИН через АИСОИП или другой источник",
+  "description": "Proxy-сервис для проверки задолженности по ИИН и БИН",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
