@@ -28,17 +28,20 @@ async function scrapeDebts(iin) {
 
   // Надёжно парсим общее число из info-блока DataTables
   let total = details.length;
-  const info = $("div.dataTables_info").text();  
-  // Пример текста: "Показаны записи с 1 до 3 из 3"
+  const info = $("div.dataTables_info").text();
   const m = info.match(/из\s+(\d+)/i);
-  if (m) total = parseInt(m[1], 10);
+  if (m) {
+    total = parseInt(m[1], 10);
+  }
 
   return { total, details };
 }
 
 app.get("/check-debtor-status", async (req, res) => {
   const iin = req.query.iin;
-  if (!iin) return res.status(400).json({ message: "Параметр iin обязателен" });
+  if (!iin) {
+    return res.status(400).json({ message: "Параметр iin обязателен" });
+  }
 
   try {
     const { total, details } = await scrapeDebts(iin);
@@ -53,9 +56,6 @@ app.get("/check-debtor-status", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Listening on ${PORT}`);
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
-
