@@ -1,19 +1,17 @@
-```js
 // server.js
 const express = require("express");
-const fetch = require("node-fetch");
 const app = express();
 app.use(express.json());
 
 /**
- * Простая валидация формата ИИН/БИН (12 цифр)
+ * Простейшая валидация формата ИИН/БИН — ровно 12 цифр
  */
 function isValidFormat(iin_bin) {
   return /^\d{12}$/.test(iin_bin);
 }
 
 /**
- * Ваш основной endpoint: проверка задолженности по ИИН/БИН
+ * Эндпоинт проверки задолженности по ИИН/БИН
  */
 app.get("/check", async (req, res) => {
   const iin_bin = req.query.iin_bin;
@@ -29,18 +27,13 @@ app.get("/check", async (req, res) => {
   }
 
   try {
-    // Если есть доступ к реальному гос-API, раскомментируйте и настройте URL:
-    // const apiRes = await fetch(`https://aisoip.adilet.gov.kz/api/debt-status?iin_bin=${iin_bin}`);
-    // const data = await apiRes.json();
-    // const { debtorStatus, details } = data;
-
-    // Пока вернём заглушку:
+    // Здесь мог бы быть реальный вызов к Гос-API, но пока — заглушка:
     const debtorStatus = "Должник не найден";
     const details = "";
 
     return res.json({ debtorStatus, details });
   } catch (err) {
-    console.error("Error fetching debt status:", err);
+    console.error("Error in /check:", err);
     return res.status(500).json({ message: "Внутренняя ошибка сервиса" });
   }
 });
@@ -49,4 +42,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Debt-checker listening on port ${PORT}`);
 });
-```
